@@ -2,7 +2,7 @@
 
 import asyncio
 import os
-from typing import List, Dict, Optional
+from typing import List, Dict, Optional, Any
 from importlib import import_module
 
 
@@ -40,6 +40,40 @@ class OpenAIClient:
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": prompt}
             ]
+
+            resp = self._client.chat.completions.create(
+                model=self._model,
+                messages=messages,
+                temperature=0.2,
+            )
+            content = getattr(resp.choices[0].message, "content", "") or ""
+            return content.strip() or ""
+
+        return await asyncio.to_thread(_call)
+    
+    async def complete_with_history(
+        self,
+        prompt: str,
+        system_prompt: str,
+        history: List[Dict[str, Any]]
+    ) -> str:
+        if not self._client:
+            return "(OpenAI unavailable)"
+
+        def _call() -> str:
+            messages: List[Dict[str, str]] = [
+                {"role": "system", "content": system_prompt}
+            ]
+            
+            # Add conversation history
+            for msg in history:
+                messages.append({
+                    "role": msg["role"],
+                    "content": msg["content"]
+                })
+            
+            # Add current user prompt
+            messages.append({"role": "user", "content": prompt})
 
             resp = self._client.chat.completions.create(
                 model=self._model,

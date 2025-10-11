@@ -1,7 +1,7 @@
 """Gemini client implementation (test-friendly)."""
 
 import asyncio
-from typing import Optional
+from typing import Optional, List, Dict, Any
 from importlib import import_module
 
 
@@ -39,6 +39,37 @@ class GeminiClient:
 
         def _build_full_prompt() -> str:
             return f"{system_prompt}\n\nUser: {prompt}"
+
+        def _call() -> str:
+            full_prompt = _build_full_prompt()
+            resp = self._model.generate_content(full_prompt)
+            text = getattr(resp, "text", "") or ""
+            return text.strip() or "(empty)"
+
+        return await asyncio.to_thread(_call)
+    
+    async def complete_with_history(
+        self,
+        prompt: str,
+        system_prompt: str,
+        history: List[Dict[str, Any]]
+    ) -> str:
+        if not self._model:
+            return "(Gemini unavailable)"
+
+        def _build_full_prompt() -> str:
+            # Build conversation history
+            conversation_text = ""
+            for msg in history:
+                role_label = "User" if msg["role"] == "user" else "Assistant"
+                conversation_text += f"{role_label}: {msg['content']}\n\n"
+            
+            # Add current user prompt
+            full_prompt = f"{system_prompt}\n\n"
+            if conversation_text:
+                full_prompt += f"Previous conversation:\n{conversation_text}"
+            full_prompt += f"User: {prompt}"
+            return full_prompt
 
         def _call() -> str:
             full_prompt = _build_full_prompt()
