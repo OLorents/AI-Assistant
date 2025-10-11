@@ -1,0 +1,10 @@
+# Core dependencies
+python-dotenv>=1.0.0
+
+# LLM API clients (optional - install as needed)
+openai>=1.0.0
+google-generativeai>=0.3.0
+
+# Development dependencies (optional)
+pytest>=7.0.0
+
