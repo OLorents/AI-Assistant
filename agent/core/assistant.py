@@ -16,7 +16,8 @@ class AssistantService:
         if not user_prompt.strip():
             return "Please enter a non-empty request."
         
-        system = self._p.system_prompt or f"You are {self._p.agent}, a helpful assistant."
+        # Build enhanced system prompt
+        system = self._build_enhanced_system_prompt()
         
         # Add user message to history
         self._history_manager.add_message("user", user_prompt)
@@ -35,6 +36,37 @@ class AssistantService:
         
         return reply
     
+    def _build_enhanced_system_prompt(self) -> str:
+        """Build an enhanced system prompt with better context and instructions."""
+        base_prompt = self._p.system_prompt or f"You are {self._p.agent}, a helpful assistant."
+        
+        # Add context about the current session
+        conversation_count = len(self._history_manager.current_conversation.messages) if self._history_manager.current_conversation else 0
+        
+        enhanced_prompt = f"""{base_prompt}
+
+## Context
+- You are responding in a conversational AI assistant session
+- Current conversation has {conversation_count} previous messages
+- Model: {self._p.model} via {self._p.provider}
+- Session started: {self._history_manager.current_conversation.created_at if self._history_manager.current_conversation else 'now'}
+
+## Instructions
+- Provide accurate, helpful, and concise responses
+- If you're unsure about something, say so rather than guessing
+- For coding questions, provide working examples when possible
+- For complex topics, break down explanations into clear steps
+- Maintain context from previous messages in the conversation
+- Be direct and to the point while remaining helpful
+
+## Response Guidelines
+- Use clear, professional language
+- Include relevant details but avoid unnecessary verbosity
+- If the question is unclear, ask for clarification
+- For technical topics, assume the user has basic knowledge unless they indicate otherwise"""
+        
+        return enhanced_prompt
+    
     def get_history_manager(self) -> HistoryManager:
         """Get the history manager instance."""
         return self._history_manager
@@ -43,6 +75,3 @@ class AssistantService:
         """Clear the current conversation history."""
         self._history_manager.clear_current_conversation()
     
-    def save_conversation(self) -> None:
-        """Save the current conversation."""
-        self._history_manager.save_conversation()

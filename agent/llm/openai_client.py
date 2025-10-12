@@ -44,7 +44,9 @@ class OpenAIClient:
             resp = self._client.chat.completions.create(
                 model=self._model,
                 messages=messages,
-                temperature=0.2,
+                temperature=0.1,  # Lower temperature for more consistent responses
+                max_tokens=2000,  # Reasonable limit
+                top_p=0.9,       # Focus on most likely tokens
             )
             content = getattr(resp.choices[0].message, "content", "") or ""
             return content.strip() or ""
@@ -78,7 +80,9 @@ class OpenAIClient:
             resp = self._client.chat.completions.create(
                 model=self._model,
                 messages=messages,
-                temperature=0.2,
+                temperature=0.1,  # Lower temperature for more consistent responses
+                max_tokens=2000,  # Reasonable limit
+                top_p=0.9,       # Focus on most likely tokens
             )
             content = getattr(resp.choices[0].message, "content", "") or ""
             return content.strip() or ""

@@ -24,7 +24,7 @@ except Exception:
 
 
 class EnvConfigProvider:
-    def load(self, question: str = "") -> AiParameters:
+    def load(self) -> AiParameters:
         agent = os.getenv("AGENT") or os.getenv("AI_AGENT") or "DefaultAgent"
         gemini_key = os.getenv("GEMINI_API_KEY")
         openai_key = os.getenv("OPENAI_API_KEY")

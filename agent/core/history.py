@@ -1,10 +1,8 @@
 """Conversation history management."""
 
-import json
-import os
 from datetime import datetime
 from typing import List, Dict, Any, Optional
-from dataclasses import dataclass, asdict
+from dataclasses import dataclass
 
 
 @dataclass
@@ -26,17 +24,10 @@ class Conversation:
 
 
 class HistoryManager:
-    """Manages conversation history storage and retrieval."""
+    """Manages conversation history in memory."""
     
-    def __init__(self, history_dir: str = ".history"):
-        self.history_dir = history_dir
+    def __init__(self):
         self.current_conversation: Optional[Conversation] = None
-        self._ensure_history_dir()
-    
-    def _ensure_history_dir(self) -> None:
-        """Ensure the history directory exists."""
-        if not os.path.exists(self.history_dir):
-            os.makedirs(self.history_dir)
     
     def start_new_conversation(self, title: Optional[str] = None) -> Conversation:
         """Start a new conversation session."""
@@ -76,68 +67,6 @@ class HistoryManager:
             for msg in self.current_conversation.messages
         ]
     
-    def save_conversation(self) -> None:
-        """Save the current conversation to disk."""
-        if not self.current_conversation:
-            return
-        
-        filename = os.path.join(self.history_dir, f"{self.current_conversation.id}.json")
-        with open(filename, 'w', encoding='utf-8') as f:
-            json.dump(asdict(self.current_conversation), f, indent=2, ensure_ascii=False)
-    
-    def load_conversation(self, conversation_id: str) -> Optional[Conversation]:
-        """Load a conversation from disk."""
-        filename = os.path.join(self.history_dir, f"{conversation_id}.json")
-        if not os.path.exists(filename):
-            return None
-        
-        try:
-            with open(filename, 'r', encoding='utf-8') as f:
-                data = json.load(f)
-            
-            # Convert message dictionaries back to Message objects
-            messages = [Message(**msg) for msg in data['messages']]
-            conversation = Conversation(
-                id=data['id'],
-                title=data['title'],
-                messages=messages,
-                created_at=data['created_at'],
-                updated_at=data['updated_at']
-            )
-            return conversation
-        except (json.JSONDecodeError, KeyError, TypeError):
-            return None
-    
-    def list_conversations(self) -> List[Dict[str, str]]:
-        """List all saved conversations."""
-        conversations = []
-        if not os.path.exists(self.history_dir):
-            return conversations
-        
-        for filename in os.listdir(self.history_dir):
-            if filename.endswith('.json'):
-                conversation_id = filename[:-5]  # Remove .json extension
-                conversation = self.load_conversation(conversation_id)
-                if conversation:
-                    conversations.append({
-                        'id': conversation.id,
-                        'title': conversation.title,
-                        'created_at': conversation.created_at,
-                        'updated_at': conversation.updated_at,
-                        'message_count': len(conversation.messages)
-                    })
-        
-        # Sort by updated_at, most recent first
-        conversations.sort(key=lambda x: x['updated_at'], reverse=True)
-        return conversations
-    
-    def delete_conversation(self, conversation_id: str) -> bool:
-        """Delete a conversation from disk."""
-        filename = os.path.join(self.history_dir, f"{conversation_id}.json")
-        if os.path.exists(filename):
-            os.remove(filename)
-            return True
-        return False
     
     def clear_current_conversation(self) -> None:
         """Clear the current conversation."""

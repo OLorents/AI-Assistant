@@ -37,21 +37,12 @@ class ArgParser:
     def parse_history_command(self, argv: List[str]) -> Tuple[str, Optional[str]]:
         """Parse history management commands."""
         if len(argv) < 2:
-            return "list", None
+            return "help", None
         
         command = argv[1].lower()
-        target_id = argv[2] if len(argv) > 2 else None
         
-        if command in ["list", "ls", "show"]:
-            return "list", None
-        elif command in ["show", "view"] and target_id:
-            return "show", target_id
-        elif command in ["delete", "del", "remove"] and target_id:
-            return "delete", target_id
-        elif command in ["clear", "reset"]:
+        if command in ["clear", "reset"]:
             return "clear", None
-        elif command in ["save"]:
-            return "save", None
         else:
             return "help", None
 

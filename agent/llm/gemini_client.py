@@ -38,7 +38,7 @@ class GeminiClient:
             return "(Gemini unavailable)"
 
         def _build_full_prompt() -> str:
-            return f"{system_prompt}\n\nUser: {prompt}"
+            return f"{system_prompt}\n\n---\n\nUser: {prompt}"
 
         def _call() -> str:
             full_prompt = _build_full_prompt()
@@ -58,17 +58,17 @@ class GeminiClient:
             return "(Gemini unavailable)"
 
         def _build_full_prompt() -> str:
-            # Build conversation history
+            # Build conversation history with better formatting
             conversation_text = ""
-            for msg in history:
+            for i, msg in enumerate(history, 1):
                 role_label = "User" if msg["role"] == "user" else "Assistant"
-                conversation_text += f"{role_label}: {msg['content']}\n\n"
+                conversation_text += f"{i}. {role_label}: {msg['content']}\n\n"
             
-            # Add current user prompt
+            # Add current user prompt with clear separation
             full_prompt = f"{system_prompt}\n\n"
             if conversation_text:
-                full_prompt += f"Previous conversation:\n{conversation_text}"
-            full_prompt += f"User: {prompt}"
+                full_prompt += f"## Previous Conversation\n{conversation_text}---\n\n"
+            full_prompt += f"## Current Request\nUser: {prompt}"
             return full_prompt
 
         def _call() -> str:

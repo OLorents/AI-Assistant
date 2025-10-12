@@ -26,62 +26,12 @@ class Application:
     
     def handle_history_command(self, argv: List[str], assistant: AssistantService = None) -> None:
         """Handle history management commands."""
-        command, target_id = self._arg_parser.parse_history_command(argv)
-        history_manager = HistoryManager()
+        command, _ = self._arg_parser.parse_history_command(argv)
         
-        if command == "list":
-            self._list_conversations(history_manager)
-        elif command == "show" and target_id:
-            self._show_conversation(history_manager, target_id)
-        elif command == "delete" and target_id:
-            self._delete_conversation(history_manager, target_id)
-        elif command == "clear":
+        if command == "clear":
             self._clear_current_conversation(assistant)
-        elif command == "save":
-            self._save_current_conversation(assistant)
         else:
             self._show_history_help()
-    
-    def _list_conversations(self, history_manager: HistoryManager) -> None:
-        """List all saved conversations."""
-        conversations = history_manager.list_conversations()
-        if not conversations:
-            print("No saved conversations found.")
-            return
-        
-        print(f"\nSaved Conversations ({len(conversations)}):")
-        print("-" * 80)
-        for conv in conversations:
-            print(f"ID: {conv['id']}")
-            print(f"Title: {conv['title']}")
-            print(f"Messages: {conv['message_count']}")
-            print(f"Updated: {conv['updated_at']}")
-            print("-" * 80)
-    
-    def _show_conversation(self, history_manager: HistoryManager, conversation_id: str) -> None:
-        """Show a specific conversation."""
-        conversation = history_manager.load_conversation(conversation_id)
-        if not conversation:
-            print(f"Conversation '{conversation_id}' not found.")
-            return
-        
-        print(f"\nConversation: {conversation.title}")
-        print(f"ID: {conversation.id}")
-        print(f"Created: {conversation.created_at}")
-        print(f"Updated: {conversation.updated_at}")
-        print("-" * 80)
-        
-        for msg in conversation.messages:
-            role_icon = "User" if msg.role == "user" else "Assistant"
-            print(f"{role_icon} {msg.role.title()}: {msg.content}")
-            print()
-    
-    def _delete_conversation(self, history_manager: HistoryManager, conversation_id: str) -> None:
-        """Delete a conversation."""
-        if history_manager.delete_conversation(conversation_id):
-            print(f"Conversation '{conversation_id}' deleted.")
-        else:
-            print(f"Conversation '{conversation_id}' not found.")
     
     def _clear_current_conversation(self, assistant: AssistantService = None) -> None:
         """Clear the current conversation history."""
@@ -91,22 +41,10 @@ class Application:
         else:
             print("No active conversation to clear.")
     
-    def _save_current_conversation(self, assistant: AssistantService = None) -> None:
-        """Save the current conversation."""
-        if assistant:
-            assistant.save_conversation()
-            print("Current conversation saved.")
-        else:
-            print("No active conversation to save.")
-    
     def _show_history_help(self) -> None:
         """Show help for history commands."""
         print("\nHistory Commands:")
-        print("  history list          - List all saved conversations")
-        print("  history show <id>     - Show a specific conversation")
-        print("  history delete <id>   - Delete a conversation")
         print("  history clear         - Clear current conversation")
-        print("  history save          - Save current conversation")
         print("  history help          - Show this help")
 
     async def process_query(self, user_input: str, assistant: AssistantService) -> None:
@@ -131,7 +69,7 @@ class Application:
             return
 
         # Build params + assistant once (REPL preserves memory)
-        params = EnvConfigProvider().load("")
+        params = EnvConfigProvider().load()
         history_manager = HistoryManager()
 
         # ONE-SHOT
@@ -179,8 +117,9 @@ class Application:
                 break
             
             # Check for history commands in REPL
-            if self._arg_parser.is_history_command([user_in]):
-                self.handle_history_command([user_in], assistant)
+            command_parts = user_in.strip().split()
+            if self._arg_parser.is_history_command(command_parts):
+                self.handle_history_command(command_parts, assistant)
                 continue
             
             try:
