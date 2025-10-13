@@ -16,6 +16,38 @@ class Application:
     def __init__(self, cfg, arg_parser):
         self._cfg = cfg
         self._arg_parser = arg_parser
+    
+    @staticmethod
+    def _get_provider_for_agent(agent: str) -> str:
+        """Map agent to appropriate provider."""
+        if agent == "openaiagent":
+            return "openai"
+        elif agent == "geminiagent":
+            return "gemini"
+        else:
+            return "stub"  # fallback for unknown agents
+    
+    @staticmethod
+    def _get_api_key_for_provider(provider: str) -> str:
+        """Get the appropriate API key for the provider."""
+        import os
+        if provider == "openai":
+            return os.getenv("OPENAI_API_KEY", "")
+        elif provider == "gemini":
+            return os.getenv("GEMINI_API_KEY", "")
+        else:
+            return ""
+    
+    @staticmethod
+    def _get_default_model_for_provider(provider: str) -> str:
+        """Get the default model for the provider."""
+        import os
+        if provider == "openai":
+            return os.getenv("OPENAI_MODEL") or "gpt-4o-mini"
+        elif provider == "gemini":
+            return os.getenv("GEMINI_MODEL") or "gemini-2.5-flash"
+        else:
+            return "stub-model"
 
     @staticmethod
     def configure_ctrl_c() -> None:
@@ -76,11 +108,15 @@ class Application:
         if len(argv) > 1:
             question, agent_override, model_override = self._arg_parser.parse(argv[1:])
             if agent_override:
+                normalized_agent = ArgParser.normalize_agent(agent_override) or params.agent
+                provider = self._get_provider_for_agent(normalized_agent)
+                api_key = self._get_api_key_for_provider(provider)
+                model = self._get_default_model_for_provider(provider)
                 params = AiParameters(
-                    agent=ArgParser.normalize_agent(agent_override) or params.agent,
-                    model=params.model,
-                    provider=params.provider,
-                    api_key=params.api_key,
+                    agent=normalized_agent,
+                    model=model,
+                    provider=provider,
+                    api_key=api_key,
                     system_prompt=params.system_prompt,
                 )
             if model_override:

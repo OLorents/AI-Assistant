@@ -107,8 +107,8 @@ class TestCLIIntegration:
                         with patch('builtins.print') as mock_print:
                             await self.app.run(["script", "--agent=gemini", "Test question"])
                             
-                            # Verify agent override was applied
-                            mock_print.assert_any_call("Agent: geminiagent | Provider: stub | Model: default-model")
+                            # Verify agent override was applied (provider should also change to gemini, model to default for provider)
+                            mock_print.assert_any_call("Agent: geminiagent | Provider: gemini | Model: gemini-2.5-flash")
 
     @pytest.mark.asyncio
     async def test_one_shot_with_model_override(self):

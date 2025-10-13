@@ -27,7 +27,8 @@ python -m agent.cli
 python -m agent.cli "Explain quantum computing"
 
 # Override model
-python -m agent.cli --model=gpt-4 "Write Python code"
+python -m agent.cli --agent=openaiagent "Why do we need AI"  
+python -m agent.cli --agent=geminiagent "Why do we need AI"
 
 ## Configuration
 
@@ -56,4 +57,3 @@ The AI Assistant maintains conversation history for context-aware interactions
 - Multi-provider support (OpenAI, Gemini)
 - Stub client for development without API keys
 - Conversation history 
-
