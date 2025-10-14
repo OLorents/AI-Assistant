@@ -4,6 +4,11 @@ from typing import List, Dict, Any, Optional
 from ..config.params import AiParameters
 from ..llm.interfaces import LLMClient
 from .history import HistoryManager
+from ..intents.chain import IntentChain
+from ..intents.base import IntentContext
+from ..commands.service import CommandService
+from ..commands.runner import SubprocessRunner
+from ..commands.confirm import StdInConfirmation
 
 
 class AssistantService:
@@ -11,16 +16,29 @@ class AssistantService:
         self._p = params
         self._client = client
         self._history_manager = history_manager or HistoryManager()
+        self._command_service = CommandService(SubprocessRunner(), StdInConfirmation())
+        self._intent_chain = self._create_intent_chain()
 
     async def answer(self, user_prompt: str, use_history: bool = True) -> str:
         if not user_prompt.strip():
             return "Please enter a non-empty request."
         
-        # Build enhanced system prompt
-        system = self._build_enhanced_system_prompt()
-        
         # Add user message to history
         self._history_manager.add_message("user", user_prompt)
+        
+        # Check for intents first
+        intent_context = IntentContext(self._command_service)
+        intent_handled = await self._intent_chain.try_handle(user_prompt, intent_context)
+        
+        if intent_handled:
+            # Intent was handled, add a generic response to history
+            reply = "Intent handled successfully."
+            self._history_manager.add_message("assistant", reply)
+            return reply
+        
+        # No intent matched, proceed with LLM
+        # Build enhanced system prompt
+        system = self._build_enhanced_system_prompt()
         
         # Get conversation history
         history = self._history_manager.get_conversation_history()[:-1] if use_history else []  # Exclude current user message
@@ -74,4 +92,24 @@ class AssistantService:
     def clear_history(self) -> None:
         """Clear the current conversation history."""
         self._history_manager.clear_current_conversation()
+    
+    def _create_intent_chain(self) -> IntentChain:
+        """Create and configure the intent chain with all available handlers."""
+        from ..intents.weather import WeatherHandler
+        from ..intents.public_ip import PublicIpHandler
+        from ..intents.date_time import DateTimeHandler
+        from ..intents.time_only import TimeHandler
+        from ..intents.date_only import DateHandler
+        from ..intents.list_files import ListFilesHandler
+        
+        handlers = [
+            WeatherHandler(),
+            PublicIpHandler(),
+            DateTimeHandler(),
+            TimeHandler(),
+            DateHandler(),
+            ListFilesHandler(),
+        ]
+        
+        return IntentChain(handlers)
     
