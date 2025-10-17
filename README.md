@@ -12,9 +12,6 @@ pip install -r requirements.txt
 copy .env.example .env   # Windows
 # or
 cp .env.example .env     # macOS/Linux
-
-# Run the assistant
-python -m agent.cli "What is machine learning?"
 ```
 
 ## Usage
@@ -52,8 +49,21 @@ OPENAI_MODEL=gpt-4o-mini
 ## History Management
 The AI Assistant maintains conversation history for context-aware interactions
 
+```
 ## Features
 
-- Multi-provider support (OpenAI, Gemini)
-- Stub client for development without API keys
-- Conversation history 
+- **Multi-provider support** (OpenAI, Gemini)
+- **Stub client** for development without API keys
+- **Conversation history** with context-aware interactions
+- **History management** (clear, view conversation history)
+- **Intent system** with built-in handlers:
+  - **Date & Time**: Get current date, time, or date-time
+  - **File Operations**: List files and directories (ls/dir commands)
+  - **Weather**: Get weather information for any city
+  - **Network**: Check your public IP address
+- **Command execution** with user confirmation for safety
+- **Cross-platform support** (Windows, macOS, Linux)
+- **Interactive CLI** with REPL mode
+- **One-shot queries** for quick answers
+- **Model override** support for different AI providers
+- **Comprehensive test suite** (119 tests covering all functionality)
