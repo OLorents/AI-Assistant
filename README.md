@@ -41,8 +41,6 @@ python -m agent.cli history clear
 # Or in interactive mode:
 history clear
 ```
-
-```
 ## Features
 
 - **Multi-provider support** (OpenAI, Gemini)
