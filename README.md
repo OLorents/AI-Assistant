@@ -27,27 +27,21 @@ python -m agent.cli "Explain quantum computing"
 python -m agent.cli --agent=openaiagent "Why do we need AI"  
 python -m agent.cli --agent=geminiagent "Why do we need AI"
 
-## Configuration
-
-Create a `.env` file:
-
-# Optional agent name (used by your app)
-AGENT=DefaultAgent
-# or
-AI_AGENT=DefaultAgent
-
-# Google Gemini (preferred if present)
-GEMINI_API_KEY=your_gemini_key
-GEMINI_MODEL=gemini-2.5-flash
-
-# OpenAI
-OPENAI_API_KEY=your_openai_key
-OPENAI_MODEL=gpt-4o-mini
 
 **Note**: If no API keys are provided, uses a stub client for testing.
 
 ## History Management
-The AI Assistant maintains conversation history for context-aware interactions
+The AI Assistant maintains conversation history for context-aware interactions.
+
+### History Commands
+
+```bash
+# Clear current conversation history
+python -m agent.cli history clear
+
+# Or in interactive mode:
+history clear
+```
 
 ```
 ## Features
@@ -55,7 +49,7 @@ The AI Assistant maintains conversation history for context-aware interactions
 - **Multi-provider support** (OpenAI, Gemini)
 - **Stub client** for development without API keys
 - **Conversation history** with context-aware interactions
-- **History management** (clear, view conversation history)
+- **History management** (clear history)
 - **Intent system** with built-in handlers:
   - **Date & Time**: Get current date, time, or date-time
   - **File Operations**: List files and directories (ls/dir commands)
