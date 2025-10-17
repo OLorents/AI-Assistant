@@ -27,7 +27,6 @@ python -m agent.cli "Explain quantum computing"
 python -m agent.cli --agent=openaiagent "Why do we need AI"  
 python -m agent.cli --agent=geminiagent "Why do we need AI"
 
-
 **Note**: If no API keys are provided, uses a stub client for testing.
 
 ## History Management
